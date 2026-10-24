@@ -1,0 +1,72 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Length 3713 >>
+stream
+0.043 0.110 0.188 rg BT /F1 26 Tf 56 790 Td (ANWAR) Tj ET
+0.000 0.357 0.686 rg BT /F2 11 Tf 56 768 Td (Fullstack & Backend Engineer) Tj ET
+0.251 0.278 0.329 rg BT /F2 9 Tf 56 753 Td (contact@anwar.dev  |  github.com/darektoa  |  Indonesia) Tj ET
+0.753 0.776 0.839 RG 0.8 w 56 741 m 539 741 l S
+0.000 0.357 0.686 rg BT /F1 11 Tf 56 709 Td (PROFILE) Tj ET
+0.043 0.110 0.188 rg BT /F2 10 Tf 56 693 Td (Software engineering graduate focused on resilient backend architectures, REST APIs, and) Tj ET
+0.043 0.110 0.188 rg BT /F2 10 Tf 56 680 Td (polished fullstack interfaces. Three years building and deploying production systems with) Tj ET
+0.043 0.110 0.188 rg BT /F2 10 Tf 56 667 Td (Laravel, React, and cloud infrastructure.) Tj ET
+0.000 0.357 0.686 rg BT /F1 11 Tf 56 648 Td (EXPERIENCE) Tj ET
+0.043 0.110 0.188 rg BT /F1 10 Tf 56 632 Td (Backend Engineer - PT. Indonesia Hakiki Pertama) Tj ET
+0.251 0.278 0.329 rg BT /F2 9 Tf 430 632 Td (Oct 2021 - Present) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 619 Td (Deploy cloud servers and API providers with their web dashboards; own backend delivery from schema) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 607 Td (design to release.) Tj ET
+0.043 0.110 0.188 rg BT /F1 10 Tf 56 589 Td (Frontend & Backend Engineer - PT. Solusi Intek Indonesia) Tj ET
+0.251 0.278 0.329 rg BT /F2 9 Tf 430 589 Td (Apr 2021 - Sep 2021) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 576 Td (Internship at a cyber technology company, shipping frontend and backend web features.) Tj ET
+0.043 0.110 0.188 rg BT /F1 10 Tf 56 558 Td (Backend Mentor - Dicoding Indonesia) Tj ET
+0.251 0.278 0.329 rg BT /F2 9 Tf 430 558 Td (Jun 2021) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 545 Td (Facilitated the Backend for Beginner class during the AWS Cloud and Backend Scholarship 2021.) Tj ET
+0.043 0.110 0.188 rg BT /F1 10 Tf 56 527 Td (Frontend Mentor - Dicoding Indonesia) Tj ET
+0.251 0.278 0.329 rg BT /F2 9 Tf 430 527 Td (Sep 2020) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 514 Td (Facilitated the MPWA class during the Baparekraf Digital Talent 2020 program.) Tj ET
+0.000 0.357 0.686 rg BT /F1 11 Tf 56 490 Td (SELECTED WORK) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 474 Td (Jakarta Marathon 2022 - REST API and admin dashboard for participant telemetry and race timing.) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 460 Td (Yukita App - REST microservices for community content distribution and tokenized auth.) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 446 Td (School Fintech Template - fee reconciliation, virtual account webhooks, and accounting statements.) Tj ET
+0.000 0.357 0.686 rg BT /F1 11 Tf 56 426 Td (SKILLS) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 410 Td (Frontend: HTML, CSS, JavaScript, React.js, Tailwind CSS, Bootstrap, Figma) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 398 Td (Backend: PHP, Laravel, Node.js, REST API design, authentication flows) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 386 Td (Data & Ops: MySQL, MariaDB, Redis, Git, Docker, Linux, CI/CD, Nginx) Tj ET
+0.000 0.357 0.686 rg BT /F1 11 Tf 56 368 Td (CERTIFICATIONS) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 352 Td (Dicoding - MPWA/Frontend Facilitator and Completion Certificates) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 340 Td (Dicoding - Backend Facilitator Certificate \(AWS Cloud & Backend Scholarship\)) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 328 Td (Progate - Node.js Path Completion Certificate) Tj ET
+0.251 0.278 0.329 rg BT /F2 9.5 Tf 56 316 Td (Kominfo RI - Ready Set Code SQL Path Completion Certificate) Tj ET
+0.753 0.776 0.839 RG 0.8 w 56 58 m 539 58 l S
+0.251 0.278 0.329 rg BT /F2 8 Tf 56 44 Td (Portfolio: anwar.dev - Generated from the live portfolio content.) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000000353 00000 n 
+0000000450 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+4215
+%%EOF
