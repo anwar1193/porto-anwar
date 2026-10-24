@@ -25,17 +25,18 @@ async function prepareDatabase() {
   rmSync(`${TEST_DB}-wal`, { force: true });
 
   const client = createClient({ url: `file:${TEST_DB}` });
-  const migrationFile = readdirSync("drizzle")
+  const migrationFiles = readdirSync("drizzle")
     .filter((file) => file.endsWith(".sql"))
-    .sort()
-    .at(-1);
+    .sort();
 
-  if (!migrationFile) throw new Error("No migration file found.");
+  if (migrationFiles.length === 0) throw new Error("No migration file found.");
 
-  const migration = readFileSync(join("drizzle", migrationFile), "utf8");
+  for (const migrationFile of migrationFiles) {
+    const migration = readFileSync(join("drizzle", migrationFile), "utf8");
 
-  for (const statement of migration.split("--> statement-breakpoint")) {
-    if (statement.trim()) await client.execute(statement);
+    for (const statement of migration.split("--> statement-breakpoint")) {
+      if (statement.trim()) await client.execute(statement);
+    }
   }
 
   await client.close();

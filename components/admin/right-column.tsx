@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { MaterialIcon } from "@/components/material-icon";
 import { Switch } from "@/components/ui/switch";
-import { adminSkillLevels, inboxMessages } from "@/lib/content";
+import type { Skill } from "@/lib/cms/types";
+import { inboxMessages } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
 const TONE_CLASSES = {
@@ -14,8 +16,9 @@ const TONE_CLASSES = {
   tertiary: "bg-tertiary-container text-on-tertiary",
 } as const;
 
-export function RightColumn() {
+export function RightColumn({ skills }: { skills: Skill[] }) {
   const [available, setAvailable] = useState(true);
+  const visibleSkills = skills.slice(0, 4);
 
   return (
     <div className="flex flex-col gap-8 lg:col-span-4">
@@ -57,10 +60,10 @@ export function RightColumn() {
           </div>
           <div className="flex flex-col">
             <span className="font-body-muted text-body-muted font-semibold text-on-surface">
-              DuckEngine Bot Active
+              Konten tersinkron dengan database
             </span>
             <span className="font-tech-tag text-tech-tag text-on-surface-variant">
-              Auto-reply kuesioner aktif ke setiap email masuk
+              Perubahan published langsung tampil di landing page.
             </span>
           </div>
         </div>
@@ -135,7 +138,7 @@ export function RightColumn() {
 
         <button
           type="button"
-          onClick={() => toast.info("9 pesan masuk menunggu ditinjau.")}
+          onClick={() => toast.info("CRUD inbox belum termasuk pada versi ini.")}
           className="w-full rounded-xl bg-surface-container py-2.5 text-center font-tech-tag text-tech-tag text-on-surface-variant transition-colors hover:bg-surface-container-high"
         >
           Lihat Semua Pesan Masuk (9)
@@ -150,40 +153,49 @@ export function RightColumn() {
               Keahlian &amp; Tech Stack
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={() => toast.info("Editor keahlian akan tersedia segera.")}
+          <Link
+            href="/admin/skills"
             className="font-tech-tag text-tech-tag text-primary transition-colors hover:text-on-surface"
           >
-            Edit
-          </button>
+            Kelola
+          </Link>
         </div>
 
         <div className="flex flex-col gap-3">
-          {adminSkillLevels.map((level) => (
-            <div key={level.label} className="flex flex-col gap-1.5">
+          {visibleSkills.map((skill) => (
+            <div key={skill.id} className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2 font-tech-tag text-tech-tag">
                 <span className="flex items-center gap-1.5 font-medium text-on-surface">
-                  <span className={cn("size-2 rounded-full", level.dotClass)} />
-                  {level.label}
+                  <span className="size-2 rounded-full bg-primary" />
+                  {skill.name}
                 </span>
                 <span className="whitespace-nowrap text-on-surface-variant">
-                  {level.note}
+                  {skill.proficiency}%
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-surface-container">
                 <div
-                  className={cn("h-full rounded-full", level.barClass)}
-                  style={{ width: `${level.value}%` }}
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${skill.proficiency}%` }}
                 />
               </div>
             </div>
           ))}
+
+          {visibleSkills.length === 0 ? (
+            <p className="font-body-muted text-body-muted text-on-surface-variant">
+              Belum ada skill published.{" "}
+              <Link href="/admin/skills" className="text-primary underline">
+                Tambahkan skill
+              </Link>
+              .
+            </p>
+          ) : null}
         </div>
 
         <div className="flex items-center justify-between rounded-xl bg-surface-container-low p-3 font-tech-tag text-[12px] text-on-surface-variant">
           <span>
-            Terakhir diselaraskan: <strong>Hari ini, 09:15 WIB</strong>
+            Total skill: <strong>{skills.length}</strong>
           </span>
           <MaterialIcon name="sync" size={16} className="text-primary" />
         </div>

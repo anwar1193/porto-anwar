@@ -1,529 +1,368 @@
-"use client";
-
-import { useEffect, useState, type FormEvent } from "react";
-import { toast } from "sonner";
+import Link from "next/link";
 
 import { AnalyticsChart } from "@/components/admin/analytics-chart";
 import { MetricCard } from "@/components/admin/metric-card";
-import { ProjectManager } from "@/components/admin/project-manager";
 import { RightColumn } from "@/components/admin/right-column";
+import { StatusBadge } from "@/components/admin/status-badge";
 import { MaterialIcon } from "@/components/material-icon";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  adminProjectCategories,
-  initialAdminProjects,
-  type AdminProject,
-} from "@/lib/content";
+import type {
+  Achievement,
+  CmsStats,
+  Experience,
+  Project,
+  Skill,
+} from "@/lib/cms/types";
+import { formatMonth, formatPeriod } from "@/lib/cms/format";
 
-type ProjectDialogProps = {
-  open: boolean;
-  project: AdminProject | null;
-  onOpenChange: (open: boolean) => void;
-  onSave: (project: AdminProject) => void;
+type DashboardProps = {
+  stats: CmsStats;
+  recentProjects: Project[];
+  recentExperiences: Experience[];
+  skills: Skill[];
+  recentAchievements: Achievement[];
 };
 
-function ProjectDialog({
-  open,
-  project,
-  onOpenChange,
-  onSave,
-}: ProjectDialogProps) {
-  const [title, setTitle] = useState(project?.title ?? "");
-  const [summary, setSummary] = useState(project?.summary ?? "");
-  const [category, setCategory] = useState(
-    project?.category ?? adminProjectCategories[0] ?? "Fullstack Apps",
-  );
-  const [tags, setTags] = useState(project?.tags.join(", ") ?? "");
+const MODULE_LINKS = [
+  {
+    href: "/admin/projects",
+    label: "Projects",
+    description: "Case study & showcase",
+    icon: "code_blocks",
+  },
+  {
+    href: "/admin/experiences",
+    label: "Experiences",
+    description: "Karier & mentoring",
+    icon: "timeline",
+  },
+  {
+    href: "/admin/skills",
+    label: "Skills",
+    description: "Tech stack & proficiency",
+    icon: "integration_instructions",
+  },
+  {
+    href: "/admin/achievements",
+    label: "Achievements",
+    description: "Sertifikat & penghargaan",
+    icon: "military_tech",
+  },
+];
 
-  useEffect(() => {
-    if (!open) return;
-    setTitle(project?.title ?? "");
-    setSummary(project?.summary ?? "");
-    setCategory(
-      project?.category ?? adminProjectCategories[0] ?? "Fullstack Apps",
-    );
-    setTags(project?.tags.join(", ") ?? "");
-  }, [open, project]);
-
-  const categories = Array.from(
-    new Set([
-      ...adminProjectCategories,
-      ...(project ? [project.category] : []),
-    ]),
-  );
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const parsedTags = tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
-
-    onSave({
-      id: project?.id ?? `project-${Date.now()}`,
-      title: title.trim(),
-      summary: summary.trim(),
-      category,
-      tags: parsedTags.length > 0 ? parsedTags : ["General"],
-      status: project?.status ?? "Draft",
-      views: project?.views ?? "-",
-      image: project?.image,
-      icon: project?.icon ?? "deployed_code",
-      tag: project?.tag ?? "NEW",
-    });
-
-    onOpenChange(false);
-  };
-
+export function Dashboard({
+  stats,
+  recentProjects,
+  recentExperiences,
+  skills,
+  recentAchievements,
+}: DashboardProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {project ? "Sunting Proyek" : "Tambah Proyek Baru"}
-          </DialogTitle>
-          <DialogDescription>
-            {project
-              ? "Perbarui metadata proyek yang tampil di showcase portofolio."
-              : "Proyek baru disimpan sebagai draft dan bisa dipublikasikan dari daftar proyek."}
-          </DialogDescription>
-        </DialogHeader>
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-8 sm:px-8">
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-lowest p-6 shadow-sm sm:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-16 size-80 rounded-full bg-gradient-to-br from-primary-fixed to-secondary-fixed opacity-40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-10 right-48 size-48 rounded-full bg-secondary-container/20 blur-2xl" />
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="grid gap-2">
-            <Label htmlFor="project-title">Judul proyek</Label>
-            <Input
-              id="project-title"
-              required
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="ERP Cloud Enterprise Platform"
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="project-category">Kategori</Label>
-              <select
-                id="project-category"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-                className="h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                {categories.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="project-tags">Tech stack</Label>
-              <Input
-                id="project-tags"
-                value={tags}
-                onChange={(event) => setTags(event.target.value)}
-                placeholder="Laravel, React, PostgreSQL"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="project-summary">Deskripsi singkat</Label>
-            <textarea
-              id="project-summary"
-              required
-              rows={3}
-              value={summary}
-              onChange={(event) => setSummary(event.target.value)}
-              placeholder="Ringkasan arsitektur dan dampak proyek."
-              className="min-h-20 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            />
-          </div>
-
-          <DialogFooter className="mt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Batal
-            </Button>
-            <Button type="submit">
-              {project ? "Simpan perubahan" : "Tambah sebagai draft"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ExperienceDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const [role, setRole] = useState("");
-  const [organization, setOrganization] = useState("");
-  const [period, setPeriod] = useState("");
-  const [description, setDescription] = useState("");
-
-  useEffect(() => {
-    if (!open) return;
-    setRole("");
-    setOrganization("");
-    setPeriod("");
-    setDescription("");
-  }, [open]);
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    toast.success(`Pengalaman "${role}" dicatat sebagai demo lokal.`);
-    onOpenChange(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Catat Pengalaman</DialogTitle>
-          <DialogDescription>
-            Riwayat karier ini tersimpan sebagai demo lokal pada sesi ini.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="grid gap-2">
-            <Label htmlFor="experience-role">Peran</Label>
-            <Input
-              id="experience-role"
-              required
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-              placeholder="Backend Engineer"
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="experience-org">Organisasi</Label>
-              <Input
-                id="experience-org"
-                required
-                value={organization}
-                onChange={(event) => setOrganization(event.target.value)}
-                placeholder="PT. Indonesia Hakiki Pertama"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="experience-period">Periode</Label>
-              <Input
-                id="experience-period"
-                required
-                value={period}
-                onChange={(event) => setPeriod(event.target.value)}
-                placeholder="Oct 2021 - Present"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="experience-description">Ringkasan peran</Label>
-            <textarea
-              id="experience-description"
-              required
-              rows={3}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Tanggung jawab dan pencapaian utama."
-              className="min-h-20 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            />
-          </div>
-
-          <DialogFooter className="mt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Batal
-            </Button>
-            <Button type="submit">Simpan pengalaman</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export function Dashboard() {
-  const [projects, setProjects] = useState<AdminProject[]>(
-    initialAdminProjects,
-  );
-  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
-  const [experienceDialogOpen, setExperienceDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<AdminProject | null>(null);
-
-  const openCreateDialog = () => {
-    setEditing(null);
-    setProjectDialogOpen(true);
-  };
-
-  const openEditDialog = (project: AdminProject) => {
-    setEditing(project);
-    setProjectDialogOpen(true);
-  };
-
-  const handleSaveProject = (project: AdminProject) => {
-    if (editing) {
-      setProjects((previous) =>
-        previous.map((item) => (item.id === project.id ? project : item)),
-      );
-      toast.success(`Proyek "${project.title}" diperbarui.`);
-      return;
-    }
-
-    setProjects((previous) => [project, ...previous]);
-    toast.success(`Proyek "${project.title}" ditambahkan sebagai draft.`);
-  };
-
-  const handleToggleStatus = (id: string) => {
-    const target = projects.find((project) => project.id === id);
-    if (!target) return;
-
-    const nextStatus =
-      target.status === "Published" ? "Draft" : "Published";
-
-    setProjects((previous) =>
-      previous.map((project) =>
-        project.id === id ? { ...project, status: nextStatus } : project,
-      ),
-    );
-
-    toast.success(
-      nextStatus === "Published"
-        ? `"${target.title}" dipublikasikan.`
-        : `"${target.title}" disembunyikan dari publik.`,
-    );
-  };
-
-  const handleDelete = (id: string) => {
-    const target = projects.find((project) => project.id === id);
-    setProjects((previous) => previous.filter((project) => project.id !== id));
-    toast.success(`"${target?.title ?? "Proyek"}" dihapus dari daftar.`);
-  };
-
-  const scrollToProjects = () => {
-    document
-      .getElementById("portfolio-projects")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  return (
-    <>
-      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-8 sm:px-8">
-        <div className="relative overflow-hidden rounded-2xl bg-surface-container-lowest p-6 shadow-sm sm:p-8">
-          <div className="pointer-events-none absolute -right-16 -top-16 size-80 rounded-full bg-gradient-to-br from-primary-fixed to-secondary-fixed opacity-40 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-10 right-48 size-48 rounded-full bg-secondary-container/20 blur-2xl" />
-
-          <div className="relative z-10 flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
-            <div className="flex max-w-2xl flex-col gap-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-3 py-1 font-tech-tag text-tech-tag text-primary">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-secondary-container opacity-75" />
-                    <span className="relative inline-flex size-2 rounded-full bg-secondary-container" />
-                  </span>
-                  Portofolio Live • darektoa.github.io
-                </span>
-                <a
-                  href="https://darektoa.github.io"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 font-tech-tag text-tech-tag text-primary transition-colors hover:text-on-surface"
-                >
-                  <span>Buka Web</span>
-                  <MaterialIcon name="arrow_outward" size={14} />
-                </a>
-              </div>
-
-              <h1 className="font-headline-section text-headline-section-mobile tracking-tight text-on-surface sm:text-headline-section">
-                Halo, Anwar!{" "}
-                <span className="inline-block cursor-default transition-transform hover:rotate-12">
-                  👋
-                </span>
-              </h1>
-              <p className="font-body-default text-body-default text-on-surface-variant">
-                Kelola konten portofolio, pantau statistik pengunjung real-time,
-                dan perbarui kurasi proyek engineering Anda dari satu panel
-                terintegrasi.
-              </p>
-            </div>
-
+        <div className="relative z-10 flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+          <div className="flex max-w-2xl flex-col gap-2">
             <div className="flex flex-wrap items-center gap-3">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setExperienceDialogOpen(true)}
-                className="h-auto rounded-xl bg-surface-container-high px-4 py-2.5 font-tech-tag text-tech-tag text-on-surface shadow-sm transition-all hover:bg-surface-container-highest"
-              >
-                <MaterialIcon name="add_circle" size={18} className="text-primary" />
-                <span>+ Catat Pengalaman</span>
-              </Button>
-              <Button
-                type="button"
-                onClick={openCreateDialog}
-                className="h-auto rounded-xl bg-primary px-5 py-2.5 font-tech-tag text-tech-tag text-on-primary shadow-md transition-all hover:bg-primary-container hover:shadow-lg"
-              >
-                <MaterialIcon name="add_box" size={18} />
-                <span>+ Tambah Proyek Baru</span>
-              </Button>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-3 py-1 font-tech-tag text-tech-tag text-primary">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-secondary-container opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-secondary-container" />
+                </span>
+                CMS terhubung ke database
+              </span>
+              <span className="font-tech-tag text-tech-tag text-on-surface-variant">
+                {stats.published} published • {stats.drafts} draft
+              </span>
             </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Total Pengunjung Web"
-            value="14,820"
-            icon="query_stats"
-            iconClassName="bg-primary-fixed text-primary"
-            footer={
-              <>
-                <div className="inline-flex items-center gap-1 rounded-md bg-surface-container px-2 py-0.5 font-tech-tag text-tech-tag text-primary">
-                  <MaterialIcon name="trending_up" size={14} />
-                  <span>+12.4%</span>
-                </div>
-                <span className="font-tech-tag text-tech-tag text-on-surface-variant">
-                  vs bulan lalu
-                </span>
-              </>
-            }
-          />
-
-          <MetricCard
-            label="Proyek Ditampilkan"
-            value={
-              <span>
-                12{" "}
-                <span className="font-body-default text-body-default font-normal text-on-surface-variant">
-                  Karya
-                </span>
+            <h1 className="font-headline-section text-headline-section-mobile tracking-tight text-on-surface sm:text-headline-section">
+              Halo, Anwar!{" "}
+              <span className="inline-block cursor-default transition-transform hover:rotate-12">
+                👋
               </span>
-            }
-            icon="terminal"
-            iconClassName="bg-secondary-fixed text-secondary"
-            footer={
-              <>
-                <div className="inline-flex items-center gap-1.5 rounded-md bg-surface-container px-2 py-0.5 font-tech-tag text-tech-tag text-on-surface-variant">
-                  <span className="size-1.5 rounded-full bg-secondary-container" />
-                  <span>3 Kategori Aktif</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={scrollToProjects}
-                  className="font-tech-tag text-tech-tag text-primary hover:underline"
-                >
-                  Kelola Arsip
-                </button>
-              </>
-            }
-          />
-
-          <MetricCard
-            label="CV Resume Diunduh"
-            value={
-              <span>
-                284{" "}
-                <span className="font-body-default text-body-default font-normal text-on-surface-variant">
-                  kali
-                </span>
-              </span>
-            }
-            icon="file_download"
-            iconClassName="bg-surface-container-high text-primary-container"
-            footer={
-              <>
-                <div className="inline-flex items-center gap-1 rounded-md bg-surface-container px-2 py-0.5 font-tech-tag text-tech-tag text-primary">
-                  <MaterialIcon name="arrow_upward" size={14} />
-                  <span>+18%</span>
-                </div>
-                <span className="font-tech-tag text-tech-tag text-on-surface-variant">
-                  minggu ini
-                </span>
-              </>
-            }
-          />
-
-          <MetricCard
-            label="Inquiry & Pesan Baru"
-            value={
-              <span>
-                9{" "}
-                <span className="font-body-default text-body-default font-normal text-on-surface-variant">
-                  inbox
-                </span>
-              </span>
-            }
-            icon="mark_email_unread"
-            iconClassName="bg-surface-container-highest text-on-surface"
-            footer={
-              <>
-                <div className="inline-flex items-center gap-1.5 rounded-md bg-primary-fixed px-2 py-0.5 font-tech-tag text-tech-tag text-on-primary-fixed-variant">
-                  <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-                  <span>3 Belum Dibaca</span>
-                </div>
-                <span className="font-tech-tag text-tech-tag text-on-surface-variant">
-                  Prioritas Tinggi
-                </span>
-              </>
-            }
-          />
-        </div>
-
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-          <div className="flex flex-col gap-8 lg:col-span-8">
-            <AnalyticsChart />
-            <div id="portfolio-projects" className="scroll-mt-24">
-              <ProjectManager
-                projects={projects}
-                onAdd={openCreateDialog}
-                onEdit={openEditDialog}
-                onToggleStatus={handleToggleStatus}
-                onDelete={handleDelete}
-              />
-            </div>
+            </h1>
+            <p className="font-body-default text-body-default text-on-surface-variant">
+              Kelola konten portofolio dari satu panel. Semua perubahan yang
+              dipublikasikan akan tampil di landing page.
+            </p>
           </div>
 
-          <RightColumn />
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/experiences"
+              className="inline-flex h-auto items-center gap-1.5 rounded-xl bg-surface-container-high px-4 py-2.5 font-tech-tag text-tech-tag text-on-surface shadow-sm transition-all hover:bg-surface-container-highest"
+            >
+              <MaterialIcon name="add_circle" size={18} className="text-primary" />
+              <span>Catat Pengalaman</span>
+            </Link>
+            <Link
+              href="/admin/projects"
+              className="inline-flex h-auto items-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 font-tech-tag text-tech-tag text-on-primary shadow-md transition-all hover:bg-primary-container"
+            >
+              <MaterialIcon name="add_box" size={18} />
+              <span>Tambah Proyek</span>
+            </Link>
+          </div>
         </div>
       </div>
 
-      <ProjectDialog
-        open={projectDialogOpen}
-        project={editing}
-        onOpenChange={setProjectDialogOpen}
-        onSave={handleSaveProject}
-      />
-      <ExperienceDialog
-        open={experienceDialogOpen}
-        onOpenChange={setExperienceDialogOpen}
-      />
-    </>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Projects"
+          value={stats.projects}
+          icon="terminal"
+          iconClassName="bg-primary-fixed text-primary"
+          footer={
+            <Link
+              href="/admin/projects"
+              className="font-tech-tag text-tech-tag text-primary hover:underline"
+            >
+              Kelola proyek
+            </Link>
+          }
+        />
+        <MetricCard
+          label="Experiences"
+          value={stats.experiences}
+          icon="timeline"
+          iconClassName="bg-secondary-fixed text-secondary"
+          footer={
+            <Link
+              href="/admin/experiences"
+              className="font-tech-tag text-tech-tag text-primary hover:underline"
+            >
+              Kelola pengalaman
+            </Link>
+          }
+        />
+        <MetricCard
+          label="Skills"
+          value={stats.skills}
+          icon="hub"
+          iconClassName="bg-surface-container-high text-primary-container"
+          footer={
+            <Link
+              href="/admin/skills"
+              className="font-tech-tag text-tech-tag text-primary hover:underline"
+            >
+              Kelola skill
+            </Link>
+          }
+        />
+        <MetricCard
+          label="Achievements"
+          value={stats.achievements}
+          icon="military_tech"
+          iconClassName="bg-surface-container-highest text-on-surface"
+          footer={
+            <Link
+              href="/admin/achievements"
+              className="font-tech-tag text-tech-tag text-primary hover:underline"
+            >
+              Kelola pencapaian
+            </Link>
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+        <div className="flex flex-col gap-8 lg:col-span-8">
+          <AnalyticsChart />
+
+          <div className="flex flex-col gap-5 rounded-2xl bg-surface-container-lowest p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <MaterialIcon name="layers" size={20} className="text-primary" />
+                  <h2 className="font-title-card text-title-card text-on-surface">
+                    Proyek Terbaru
+                  </h2>
+                </div>
+                <p className="mt-0.5 font-body-muted text-body-muted text-on-surface-variant">
+                  Ringkasan konten proyek yang terakhir diperbarui.
+                </p>
+              </div>
+              <Link
+                href="/admin/projects"
+                className="inline-flex items-center gap-1 font-tech-tag text-tech-tag font-semibold text-primary hover:underline"
+              >
+                Lihat semua
+                <MaterialIcon name="arrow_forward" size={16} />
+              </Link>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {recentProjects.map((project) => (
+                <Link
+                  key={project.id}
+                  href="/admin/projects"
+                  className="group flex items-center gap-4 rounded-xl bg-surface-container-low/60 p-3 transition-all hover:bg-surface-container-high/70"
+                >
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-surface-container">
+                    {project.imageUrl ? (
+                      <img
+                        src={project.imageUrl}
+                        alt=""
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-on-surface-variant">
+                        <MaterialIcon name="deployed_code" size={24} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="truncate font-title-card text-base font-semibold text-on-surface">
+                        {project.title}
+                      </h3>
+                      <StatusBadge status={project.status} />
+                    </div>
+                    <p className="line-clamp-1 font-body-muted text-body-muted text-on-surface-variant">
+                      {project.summary}
+                    </p>
+                  </div>
+                  <MaterialIcon
+                    name="chevron_right"
+                    size={20}
+                    className="shrink-0 text-on-surface-variant transition-transform group-hover:translate-x-0.5"
+                  />
+                </Link>
+              ))}
+
+              {recentProjects.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-outline-variant p-6 text-center font-body-muted text-body-muted text-on-surface-variant">
+                  Belum ada proyek.{" "}
+                  <Link href="/admin/projects" className="text-primary underline">
+                    Tambahkan proyek pertama
+                  </Link>
+                  .
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="flex flex-col gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <MaterialIcon name="timeline" size={20} className="text-primary" />
+                  <h2 className="font-title-card text-title-card text-on-surface">
+                    Pengalaman Terbaru
+                  </h2>
+                </div>
+                <Link
+                  href="/admin/experiences"
+                  className="font-tech-tag text-tech-tag text-primary hover:underline"
+                >
+                  Kelola
+                </Link>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {recentExperiences.map((experience) => (
+                  <div
+                    key={experience.id}
+                    className="flex items-center justify-between gap-2 rounded-lg bg-surface-container-low/60 p-2.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-body-muted text-body-muted font-semibold text-on-surface">
+                        {experience.role}
+                      </p>
+                      <p className="truncate font-tech-tag text-[11px] text-on-surface-variant">
+                        {experience.organization} •{" "}
+                        {formatPeriod(
+                          experience.startDate,
+                          experience.endDate,
+                          experience.isCurrent,
+                        )}
+                      </p>
+                    </div>
+                    <StatusBadge status={experience.status} />
+                  </div>
+                ))}
+
+                {recentExperiences.length === 0 ? (
+                  <p className="font-body-muted text-body-muted text-on-surface-variant">
+                    Belum ada pengalaman.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <MaterialIcon
+                    name="military_tech"
+                    size={20}
+                    className="text-primary"
+                  />
+                  <h2 className="font-title-card text-title-card text-on-surface">
+                    Pencapaian Terbaru
+                  </h2>
+                </div>
+                <Link
+                  href="/admin/achievements"
+                  className="font-tech-tag text-tech-tag text-primary hover:underline"
+                >
+                  Kelola
+                </Link>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {recentAchievements.map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className="flex items-center justify-between gap-2 rounded-lg bg-surface-container-low/60 p-2.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-body-muted text-body-muted font-semibold text-on-surface">
+                        {achievement.title}
+                      </p>
+                      <p className="truncate font-tech-tag text-[11px] text-on-surface-variant">
+                        {achievement.issuer}
+                        {achievement.issuedAt
+                          ? ` • ${formatMonth(achievement.issuedAt)}`
+                          : ""}
+                      </p>
+                    </div>
+                    <StatusBadge status={achievement.status} />
+                  </div>
+                ))}
+
+                {recentAchievements.length === 0 ? (
+                  <p className="font-body-muted text-body-muted text-on-surface-variant">
+                    Belum ada pencapaian.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 lg:hidden">
+            {MODULE_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex flex-col gap-1 rounded-xl bg-surface-container-lowest p-4 shadow-sm"
+              >
+                <MaterialIcon name={item.icon} size={20} className="text-primary" />
+                <span className="font-body-muted text-body-muted font-semibold text-on-surface">
+                  {item.label}
+                </span>
+                <span className="font-tech-tag text-[11px] text-on-surface-variant">
+                  {item.description}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <RightColumn skills={skills} />
+      </div>
+    </div>
   );
 }

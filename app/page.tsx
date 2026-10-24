@@ -6,8 +6,21 @@ import { ProjectsSection } from "@/components/landing/projects-section";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { SkillsSection } from "@/components/landing/skills-section";
+import { getAchievements } from "@/lib/cms/achievements";
+import { getExperiences } from "@/lib/cms/experiences";
+import { getProjects } from "@/lib/cms/projects";
+import { getSkills } from "@/lib/cms/skills";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const [projects, achievements, experiences, skills] = await Promise.all([
+    getProjects({ publishedOnly: true }),
+    getAchievements({ publishedOnly: true }),
+    getExperiences({ publishedOnly: true }),
+    getSkills({ publishedOnly: true }),
+  ]);
+
   return (
     <div className="flex min-h-screen flex-col bg-surface text-on-surface selection:bg-secondary-fixed selection:text-on-secondary-fixed">
       <SiteHeader />
@@ -20,10 +33,10 @@ export default function HomePage() {
 
           <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-space-3xl px-margin py-space-xl md:px-margin-md lg:px-margin-lg">
             <Hero />
-            <ProjectsSection />
-            <AchievementsSection />
-            <ExperiencesSection />
-            <SkillsSection />
+            <ProjectsSection projects={projects} />
+            <AchievementsSection achievements={achievements} />
+            <ExperiencesSection experiences={experiences} />
+            <SkillsSection skills={skills} />
             <CtaSection />
           </div>
         </div>

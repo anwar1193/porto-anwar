@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -20,24 +21,40 @@ export type AdminUser = {
   role: string;
 };
 
-const NAV_ITEMS = [
+type NavItem = {
+  id: string;
+  label: string;
+  icon: string;
+  href?: string;
+};
+
+const NAV_ITEMS: NavItem[] = [
   { id: "dashboard", label: "Dashboard", icon: "grid_view", href: "/admin" },
-  { id: "projects", label: "Projects", icon: "code_blocks" },
-  { id: "experience", label: "Experiences & Career", icon: "timeline" },
+  { id: "projects", label: "Projects", icon: "code_blocks", href: "/admin/projects" },
+  {
+    id: "experience",
+    label: "Experiences & Career",
+    icon: "timeline",
+    href: "/admin/experiences",
+  },
   {
     id: "skills",
     label: "Skills & Tech Stack",
     icon: "integration_instructions",
+    href: "/admin/skills",
   },
   {
     id: "achievements",
     label: "Achievements & Certs",
     icon: "military_tech",
+    href: "/admin/achievements",
   },
   { id: "settings", label: "Settings", icon: "tune" },
-] as const;
+];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
+
   return (
     <div className="flex h-full flex-col justify-between py-6">
       <div className="flex flex-col gap-6">
@@ -61,7 +78,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
         <nav className="flex flex-col gap-1 px-4">
           {NAV_ITEMS.map((item) => {
-            const active = item.id === "dashboard";
+            const active =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : Boolean(item.href && pathname.startsWith(item.href));
             const itemClassName = cn(
               "group flex items-center gap-3 rounded-xl px-4 py-3 transition-all",
               active
@@ -82,12 +102,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               </>
             );
 
-            if ("href" in item) {
+            if (item.href) {
               return (
                 <Link
                   key={item.id}
                   href={item.href}
-                  aria-current="page"
+                  aria-current={active ? "page" : undefined}
                   onClick={onNavigate}
                   className={itemClassName}
                 >
