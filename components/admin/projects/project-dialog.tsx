@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { FormField } from "@/components/admin/form-field";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { MaterialIcon } from "@/components/material-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,8 @@ export function ProjectDialog({
   const [pending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const busy = pending || uploadingImage;
 
   const resetFeedback = () => {
     setFormError(null);
@@ -56,6 +59,11 @@ export function ProjectDialog({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     resetFeedback();
+
+    if (uploadingImage) {
+      toast.info("Tunggu sampai gambar selesai diunggah.");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     const input = {
@@ -97,7 +105,7 @@ export function ProjectDialog({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!pending) {
+        if (!busy) {
           resetFeedback();
           onOpenChange(nextOpen);
         }
@@ -246,21 +254,17 @@ export function ProjectDialog({
             </FormField>
           </div>
 
-          <FormField
-            label="URL gambar"
-            htmlFor="project-image"
+          <ImageUploadField
+            id="project-image"
+            name="imageUrl"
+            label="Gambar proyek"
+            prefix="projects"
+            hint="JPG, PNG, WebP, atau GIF. Maksimal 5 MB."
+            defaultValue={project?.imageUrl ?? ""}
             error={fieldErrors.imageUrl}
-            hint="Gunakan https://... atau path internal /..."
-          >
-            <Input
-              id="project-image"
-              name="imageUrl"
-              type="text"
-              inputMode="url"
-              defaultValue={project?.imageUrl ?? ""}
-              placeholder="https://example.com/project.png"
-            />
-          </FormField>
+            disabled={pending}
+            onUploadingChange={setUploadingImage}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
@@ -298,18 +302,20 @@ export function ProjectDialog({
             <Button
               type="button"
               variant="outline"
-              disabled={pending}
+              disabled={busy}
               onClick={() => onOpenChange(false)}
             >
               Batal
             </Button>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={busy}>
               <MaterialIcon name="save" size={16} />
               {pending
                 ? "Menyimpan..."
-                : project
-                  ? "Simpan perubahan"
-                  : "Tambah proyek"}
+                : uploadingImage
+                  ? "Mengunggah gambar..."
+                  : project
+                    ? "Simpan perubahan"
+                    : "Tambah proyek"}
             </Button>
           </DialogFooter>
         </form>

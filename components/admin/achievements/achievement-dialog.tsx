@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { FormField } from "@/components/admin/form-field";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { MaterialIcon } from "@/components/material-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +40,8 @@ export function AchievementDialog({
   const [pending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const busy = pending || uploadingImage;
 
   const resetFeedback = () => {
     setFormError(null);
@@ -48,6 +51,11 @@ export function AchievementDialog({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     resetFeedback();
+
+    if (uploadingImage) {
+      toast.info("Tunggu sampai gambar selesai diunggah.");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     const input = {
@@ -87,7 +95,7 @@ export function AchievementDialog({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!pending) {
+        if (!busy) {
           resetFeedback();
           onOpenChange(nextOpen);
         }
@@ -196,19 +204,17 @@ export function AchievementDialog({
             </FormField>
           </div>
 
-          <FormField
-            label="URL gambar"
-            htmlFor="achievement-image"
+          <ImageUploadField
+            id="achievement-image"
+            name="imageUrl"
+            label="Gambar sertifikat / penghargaan"
+            prefix="achievements"
+            hint="JPG, PNG, WebP, atau GIF. Maksimal 5 MB."
+            defaultValue={achievement?.imageUrl ?? ""}
             error={fieldErrors.imageUrl}
-            hint="Gunakan https://... atau path internal /..."
-          >
-            <Input
-              id="achievement-image"
-              name="imageUrl"
-              defaultValue={achievement?.imageUrl ?? ""}
-              placeholder="https://example.com/certificate.png"
-            />
-          </FormField>
+            disabled={pending}
+            onUploadingChange={setUploadingImage}
+          />
 
           <FormField
             label="URL verifikasi kredensial"
@@ -244,18 +250,20 @@ export function AchievementDialog({
             <Button
               type="button"
               variant="outline"
-              disabled={pending}
+              disabled={busy}
               onClick={() => onOpenChange(false)}
             >
               Batal
             </Button>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={busy}>
               <MaterialIcon name="save" size={16} />
               {pending
                 ? "Menyimpan..."
-                : achievement
-                  ? "Simpan perubahan"
-                  : "Tambah pencapaian"}
+                : uploadingImage
+                  ? "Mengunggah gambar..."
+                  : achievement
+                    ? "Simpan perubahan"
+                    : "Tambah pencapaian"}
             </Button>
           </DialogFooter>
         </form>

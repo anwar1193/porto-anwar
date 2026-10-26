@@ -11,6 +11,7 @@ Portfolio pribadi Anwar dengan landing page publik, login admin, dan dashboard C
 - Logout yang menghapus session database dan cookie.
 - Rate limit login: 5 percobaan gagal per 15 menit per email + IP.
 - CRUD Projects, Experiences & Career, Skills & Tech Stack, dan Achievements & Certs.
+- Upload gambar project dan achievement langsung ke Vercel Blob (JPG, PNG, WebP, GIF; maksimal 5 MB).
 - Status draft/published, pencarian, filter, publish/unpublish, dan pengurutan naik/turun.
 - Konfirmasi hapus, validasi Zod di server, error field, toast, dan empty state.
 - Seed admin dan seed konten awal tanpa menyimpan password plaintext.
@@ -22,6 +23,7 @@ Portfolio pribadi Anwar dengan landing page publik, login admin, dan dashboard C
 - TypeScript
 - Tailwind CSS + shadcn/ui
 - Turso (libSQL) + Drizzle ORM
+- Vercel Blob
 - Zod
 - bcryptjs
 - Vitest
@@ -134,8 +136,33 @@ turso db shell porto-anwar "SELECT status, count(*) FROM projects GROUP BY statu
 | `ADMIN_EMAIL` | Ya saat seed | Email admin, disimpan lowercase |
 | `ADMIN_NAME` | Ya saat seed | Nama tampilan admin |
 | `ADMIN_PASSWORD` | Ya saat seed | Minimal 12 karakter; hanya dipakai untuk hashing |
+| `BLOB_READ_WRITE_TOKEN` | Ya untuk upload gambar | Token Vercel Blob untuk upload gambar CMS |
 
 Jangan commit `.env.local`. File tersebut sudah diabaikan oleh `.gitignore`.
+
+## Upload Gambar
+
+Gambar project dan achievement diunggah langsung dari form CMS ke Vercel Blob.
+Tipe yang diterima adalah JPG, PNG, WebP, dan GIF dengan ukuran maksimal 5 MB.
+SVG sengaja ditolak untuk mengurangi risiko XSS.
+
+Aktifkan penyimpanan di dashboard Vercel melalui **Storage → Create → Blob**,
+lalu hubungkan store ke project. Vercel akan menambahkan
+`BLOB_READ_WRITE_TOKEN` ke environment. Untuk development lokal, jalankan
+`vercel env pull .env.local` setelah store terhubung.
+
+Endpoint token upload ada di `/api/blob/upload`. Endpoint hanya menerbitkan
+token untuk sesi admin yang valid dan hanya menerima path di bawah prefix
+`cms/`. Kolom `image_url` tetap menyimpan URL, sehingga tidak ada perubahan
+schema database. Opsi **Gunakan URL** pada field gambar tetap tersedia untuk
+gambar lama atau path internal.
+
+Jika upload gagal dengan pesan `Failed to retrieve the client token` atau
+`BLOB_READ_WRITE_TOKEN`, berarti store Blob belum terhubung atau environment
+variable-nya belum ada. Tambahkan token ke `.env.local`, lalu **restart**
+`npm run dev` karena Next.js hanya membaca `.env.local` saat server mulai.
+Untuk deployment, pastikan store terhubung ke project Vercel untuk Production
+dan Preview.
 
 ## Scripts
 
@@ -172,7 +199,7 @@ Session berlaku 7 hari, atau 30 hari jika "Ingat saya" dicentang.
 5. Setelah mutasi, action memanggil `revalidatePath()` untuk halaman admin dan `/`.
 6. Landing page hanya membaca data `published` dan langsung menampilkan perubahan.
 
-Konten baru default berstatus draft. Gunakan tombol publish untuk menampilkannya di landing page. Gambar diisi lewat URL (HTTPS atau path internal `/...`), belum ada upload file.
+Konten baru default berstatus draft. Gunakan tombol publish untuk menampilkannya di landing page. Gambar project dan achievement diunggah langsung dari form ke Vercel Blob, dengan opsi **Gunakan URL** untuk gambar lama, URL eksternal, atau path internal `/...`.
 
 ## Data dan Validasi
 
@@ -185,6 +212,7 @@ Konten baru default berstatus draft. Gunakan tombol publish untuk menampilkannya
 - URL hanya menerima `https://`, `http://`, atau path internal `/...`.
 - Delete bersifat permanen dan memakai dialog konfirmasi.
 - `sortOrder` diatur ulang otomatis saat konten dipindahkan naik/turun.
+- `imageUrl` menerima URL Blob hasil upload, `https://`/`http://`, atau path internal `/...`.
 
 ## Keamanan
 
@@ -197,6 +225,8 @@ Konten baru default berstatus draft. Gunakan tombol publish untuk menampilkannya
 - Error database tidak dikirim ke client; client menerima pesan generik.
 - Rate limit dan cleanup session/attempts dijalankan di server.
 - Server Actions memvalidasi origin secara bawaan Next.js.
+- Token upload Blob hanya diterbitkan untuk sesi admin yang valid dan hanya untuk path di bawah prefix `cms/`.
+- Tipe gambar dibatasi JPEG, PNG, WebP, dan GIF; SVG ditolak. Ukuran maksimal 5 MB divalidasi di klien dan di server oleh token Blob.
 
 ## Test
 
@@ -204,15 +234,16 @@ Konten baru default berstatus draft. Gunakan tombol publish untuk menampilkannya
 npm test
 ```
 
-Test mencakup hashing password, pembuatan dan hashing token, expiry session, validasi redirect, rate limit, cleanup, lifecycle session, validasi Zod CMS, serta CRUD dan pengurutan konten terhadap database SQLite sementara.
+Test mencakup hashing password, pembuatan dan hashing token, expiry session, validasi redirect, rate limit, cleanup, lifecycle session, validasi Zod CMS, CRUD dan pengurutan konten terhadap database SQLite sementara, validasi file gambar, serta route token upload dan komponen upload gambar.
 
 ## Deploy ke Vercel
 
 1. Buat database Turso dan jalankan `npm run db:migrate`, `npm run db:seed`, serta `npm run db:seed:content` dari lokal/CI.
 2. Tambahkan `TURSO_DATABASE_URL` dan `TURSO_AUTH_TOKEN` di Vercel Project Settings untuk Production dan Preview.
-3. Jangan menambahkan `ADMIN_PASSWORD` ke runtime Vercel.
-4. Deploy project.
-5. Uji login, CRUD, publish/unpublish, dan landing page pada preview deployment.
+3. Buat Vercel Blob store dan hubungkan ke project agar `BLOB_READ_WRITE_TOKEN` tersedia untuk Production dan Preview.
+4. Jangan menambahkan `ADMIN_PASSWORD` ke runtime Vercel.
+5. Deploy project.
+6. Uji login, CRUD, upload gambar, publish/unpublish, dan landing page pada preview deployment.
 
 Migrasi dan seed tidak dijalankan otomatis saat build Vercel untuk menghindari race condition.
 
